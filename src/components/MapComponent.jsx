@@ -45,9 +45,6 @@ function SuburbMarker({ suburb, onGeocodeComplete }) {
           if (onGeocodeComplete) {
             onGeocodeComplete(suburb, newPosition);
           }
-          
-          // Center map on the new position
-          map.flyTo(newPosition, 12);
         } else {
           setError(`Could not find location for "${suburb}"`);
         }
