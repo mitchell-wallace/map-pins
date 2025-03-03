@@ -23,6 +23,11 @@ function App() {
     });
   };
 
+  // Remove a pin by index
+  const handleRemovePin = (indexToRemove) => {
+    setPins(prevPins => prevPins.filter((_, index) => index !== indexToRemove));
+  };
+
   return (
     <div className="app-container">
       <h1>Victoria, Australia Map</h1>
@@ -37,12 +42,23 @@ function App() {
               <ul>
                 {pins.map((pin, index) => (
                   <li key={index}>
-                    {pin.name}
-                    {pin.position && (
-                      <span className="coordinates">
-                        [{pin.position[0].toFixed(4)}, {pin.position[1].toFixed(4)}]
-                      </span>
-                    )}
+                    <div className="pin-item">
+                      <div className="pin-info">
+                        <span className="pin-name">{pin.name}</span>
+                        {pin.position && (
+                          <span className="coordinates">
+                            [{pin.position[0].toFixed(4)}, {pin.position[1].toFixed(4)}]
+                          </span>
+                        )}
+                      </div>
+                      <button 
+                        className="remove-pin-btn" 
+                        onClick={() => handleRemovePin(index)}
+                        aria-label="Remove pin"
+                      >
+                        ×
+                      </button>
+                    </div>
                   </li>
                 ))}
               </ul>

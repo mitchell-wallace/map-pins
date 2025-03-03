@@ -86,13 +86,6 @@ function MapComponent({ pins = [], onPinGeocoded }) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
-        {/* Default marker for Victoria */}
-        <Marker position={VICTORIA_CENTER}>
-          <Popup>
-            Victoria, Australia
-          </Popup>
-        </Marker>
-        
         {/* Render pins with coordinates */}
         {pins.filter(pin => pin.position).map((pin, index) => (
           <Marker key={`pin-${index}`} position={pin.position}>
