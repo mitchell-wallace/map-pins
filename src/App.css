@@ -18,6 +18,34 @@
   width: 100%;
   gap: 20px;
   margin-top: 1rem;
+  /* By default, direction is row (side-by-side) for larger screens */
+  flex-direction: row;
+}
+
+/* Media query for mobile/narrow viewports */
+@media (max-width: 768px) {
+  .content-container {
+    /* Stack elements vertically on smaller screens */
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100% !important; /* Override the desktop width */
+    margin-bottom: 20px;
+  }
+  
+  #root {
+    padding: 1rem;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .map-container {
+    height: 400px !important; /* Smaller map height for mobile */
+  }
 }
 
 .sidebar {
@@ -57,6 +85,29 @@ h3 {
   display: flex;
   gap: 1rem;
   margin-bottom: 1rem;
+}
+
+/* Make radio buttons more touch-friendly on mobile */
+@media (max-width: 768px) {
+  .input-type-selector {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .input-type-selector label {
+    padding: 8px 0;
+  }
+  
+  .input-field {
+    flex-direction: column;
+  }
+  
+  .input-field input, 
+  .input-field button {
+    width: 100%;
+    margin-bottom: 0.5rem;
+    padding: 10px;
+  }
 }
 
 .input-field {
@@ -111,6 +162,13 @@ h3 {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   max-height: 300px;
   overflow-y: auto;
+}
+
+/* Adjust pins list height on mobile */
+@media (max-width: 768px) {
+  .pins-list {
+    max-height: 200px;
+  }
 }
 
 .pins-list ul {
@@ -169,6 +227,15 @@ h3 {
 
 .remove-pin-btn:hover {
   background-color: #ff4f4f;
+}
+
+/* Make remove buttons more touch-friendly on mobile */
+@media (max-width: 768px) {
+  .remove-pin-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 20px;
+  }
 }
 
 /* Ensure the leaflet container takes full width and height */
