@@ -63,30 +63,6 @@ function GeocodingHandler({ pins, onPinGeocoded }) {
   return null;
 }
 
-// Component to ensure all pins are visible
-function MapController({ pins }) {
-  const map = useMap();
-  
-  useEffect(() => {
-    // If we have pins with positions, make sure they're all visible on the map
-    const pinsWithPositions = pins.filter(pin => pin.position);
-    
-    if (pinsWithPositions.length >= 2) {
-      try {
-        // Create bounds that include all pins
-        const bounds = L.latLngBounds(pinsWithPositions.map(pin => pin.position));
-        
-        // Fit the map to these bounds with some padding
-        map.fitBounds(bounds, { padding: [50, 50] });
-      } catch (error) {
-        console.error("Error adjusting map bounds:", error);
-      }
-    }
-  }, [pins, map]);
-  
-  return null;
-}
-
 function MapComponent({ pins = [], onPinGeocoded }) {
   // Debug log to check pins being received
   console.log("MapComponent received pins:", pins);
@@ -102,9 +78,6 @@ function MapComponent({ pins = [], onPinGeocoded }) {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        
-        {/* Helper component to ensure all pins are visible */}
-        <MapController pins={pins} />
         
         {/* Handler for geocoding suburb pins */}
         <GeocodingHandler pins={pins} onPinGeocoded={onPinGeocoded} />
