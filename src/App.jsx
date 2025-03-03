@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import MapComponent from './components/MapComponent'
 import PinInput from './components/PinInput'
@@ -8,25 +8,39 @@ function App() {
 
   // Add a new pin to the state
   const handleAddPin = (newPin) => {
+    console.log("Adding new pin:", newPin);
     setPins(prevPins => [...prevPins, newPin]);
   };
 
   // Update a pin's position after geocoding
   const handlePinGeocoded = (index, position) => {
+    console.log(`Geocoding completed for pin at index ${index}:`, position);
     setPins(prevPins => {
       const updatedPins = [...prevPins];
-      updatedPins[index] = {
-        ...updatedPins[index],
-        position
-      };
+      if (index >= 0 && index < updatedPins.length) {
+        updatedPins[index] = {
+          ...updatedPins[index],
+          position
+        };
+      } else {
+        console.error(`Invalid pin index: ${index} (pins length: ${updatedPins.length})`);
+      }
+      // Log the updated pins array for debugging
+      console.log("Updated pins array:", updatedPins);
       return updatedPins;
     });
   };
 
   // Remove a pin by index
   const handleRemovePin = (indexToRemove) => {
+    console.log(`Removing pin at index ${indexToRemove}`);
     setPins(prevPins => prevPins.filter((_, index) => index !== indexToRemove));
   };
+
+  // Debug effect to log pins state changes
+  useEffect(() => {
+    console.log("Pins state updated:", pins);
+  }, [pins]);
 
   return (
     <div className="app-container">
@@ -41,7 +55,7 @@ function App() {
             ) : (
               <ul>
                 {pins.map((pin, index) => (
-                  <li key={index}>
+                  <li key={`pin-list-${index}-${pin.name}`}>
                     <div className="pin-item">
                       <div className="pin-info">
                         <span className="pin-name">{pin.name}</span>

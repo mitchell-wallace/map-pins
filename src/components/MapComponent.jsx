@@ -22,15 +22,22 @@ L.Marker.prototype.options.icon = DefaultIcon;
 const VICTORIA_CENTER = [-37.0201, 144.9646]; // Approximate center of Victoria
 const DEFAULT_ZOOM = 7;
 
-// Component to handle suburb geocoding and map updates
-function SuburbMarker({ suburb, onGeocodeComplete }) {
+// Component to handle suburb geocoding
+function GeocodingHandler({ pins, onPinGeocoded }) {
   const map = useMap();
-  const [position, setPosition] = useState(null);
-  const [error, setError] = useState(null);
-
+  
   useEffect(() => {
-    const geocodeSuburb = async () => {
+    // Find any pins that need geocoding
+    const pinsNeedingGeocoding = pins.filter(pin => pin.type === 'suburb' && !pin.position);
+    
+    // Process each pin that needs geocoding
+    pinsNeedingGeocoding.forEach(async (pin, arrayIndex) => {
       try {
+        // Find the index in the original pins array
+        const pinIndex = pins.findIndex(p => p === pin);
+        if (pinIndex === -1) return;
+        
+        const suburb = pin.name;
         // Using Nominatim for geocoding (OpenStreetMap's geocoding service)
         const query = encodeURIComponent(`${suburb}, Victoria, Australia`);
         const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`);
@@ -39,38 +46,51 @@ function SuburbMarker({ suburb, onGeocodeComplete }) {
         if (data && data.length > 0) {
           const { lat, lon } = data[0];
           const newPosition = [parseFloat(lat), parseFloat(lon)];
-          setPosition(newPosition);
           
           // Notify parent component about the geocoded position
-          if (onGeocodeComplete) {
-            onGeocodeComplete(suburb, newPosition);
+          if (onPinGeocoded) {
+            onPinGeocoded(pinIndex, newPosition);
           }
         } else {
-          setError(`Could not find location for "${suburb}"`);
+          console.error(`Could not find location for "${suburb}"`);
         }
       } catch (err) {
-        setError(`Error geocoding "${suburb}": ${err.message}`);
+        console.error(`Error geocoding pin:`, err);
       }
-    };
+    });
+  }, [pins, onPinGeocoded, map]);
+  
+  return null;
+}
 
-    if (suburb) {
-      geocodeSuburb();
+// Component to ensure all pins are visible
+function MapController({ pins }) {
+  const map = useMap();
+  
+  useEffect(() => {
+    // If we have pins with positions, make sure they're all visible on the map
+    const pinsWithPositions = pins.filter(pin => pin.position);
+    
+    if (pinsWithPositions.length >= 2) {
+      try {
+        // Create bounds that include all pins
+        const bounds = L.latLngBounds(pinsWithPositions.map(pin => pin.position));
+        
+        // Fit the map to these bounds with some padding
+        map.fitBounds(bounds, { padding: [50, 50] });
+      } catch (error) {
+        console.error("Error adjusting map bounds:", error);
+      }
     }
-  }, [suburb, map, onGeocodeComplete]);
-
-  if (!position) return null;
-
-  return (
-    <Marker position={position}>
-      <Popup>
-        {suburb}
-        {error && <div className="error">{error}</div>}
-      </Popup>
-    </Marker>
-  );
+  }, [pins, map]);
+  
+  return null;
 }
 
 function MapComponent({ pins = [], onPinGeocoded }) {
+  // Debug log to check pins being received
+  console.log("MapComponent received pins:", pins);
+  
   return (
     <div className="map-container" style={{ height: '600px', width: '100%' }}>
       <MapContainer 
@@ -83,22 +103,27 @@ function MapComponent({ pins = [], onPinGeocoded }) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
-        {/* Render pins with coordinates */}
+        {/* Helper component to ensure all pins are visible */}
+        <MapController pins={pins} />
+        
+        {/* Handler for geocoding suburb pins */}
+        <GeocodingHandler pins={pins} onPinGeocoded={onPinGeocoded} />
+        
+        {/* Render all pins with positions */}
         {pins.filter(pin => pin.position).map((pin, index) => (
-          <Marker key={`pin-${index}`} position={pin.position}>
+          <Marker 
+            key={`marker-${index}-${pin.name}`} 
+            position={pin.position}
+          >
             <Popup>
               {pin.name}
+              {pin.position && (
+                <div className="coordinates">
+                  [{pin.position[0].toFixed(4)}, {pin.position[1].toFixed(4)}]
+                </div>
+              )}
             </Popup>
           </Marker>
-        ))}
-        
-        {/* Render suburb pins that need geocoding */}
-        {pins.filter(pin => pin.type === 'suburb' && !pin.position).map((pin, index) => (
-          <SuburbMarker 
-            key={`suburb-${index}`} 
-            suburb={pin.name} 
-            onGeocodeComplete={(suburb, position) => onPinGeocoded(index, position)}
-          />
         ))}
       </MapContainer>
     </div>
